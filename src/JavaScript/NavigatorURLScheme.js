@@ -14,12 +14,14 @@
  | limitations under the License.
  */
 define([
+    "dojo/_base/array",
     "dojo/_base/declare",
-    "dojo/json",
+    "dojo/_base/lang",
     "esri/lang"
 ], function (
+    array,
     declare,
-    JSON,
+    lang,
     esriLang
 ) {
 
@@ -27,26 +29,22 @@ define([
 
     return declare([], {
 
-        version: "1.0",
-        // simulation
-        //product: "arcgis-navigator.html",
-        //paramPrefix: "?",
-        // real
-        product: "arcgis-navigator",
-        paramPrefix: "://?",
+        _version: "1.0",
+        _product: "arcgis-navigator",
+        _paramPrefix: "://",
 
-        stops: [],          // collection of (name + lat,lon in WGS84 decimal degrees) and/or (name + geocodeable address)
-        callback: {
+        _stops: [],          // collection of (name + lat,lon in WGS84 decimal degrees) and/or (name + geocodeable address)
+        _callback: {
             url: location.href,
-            prompt: "Return"
+            prompt: null
         },
 
-        start: null,        // start in "stop" format; defaults to current position
-        navigate: null,     // defaults to false
-        optimize: null,     // defaults to app setting
-        travelMode: null,   // defaults to default travel mode if available
+        _start: null,        // start in "stop" format; defaults to current position
+        _navigate: null,     // defaults to false
+        _optimize: null,     // defaults to app setting
+        _travelMode: null,   // defaults to default travel mode if available
 
-        lastStatus: "",
+        _lastStatus: "",
 
         //--------------------------------------------------------------------------------------------------------------------//
 
@@ -71,7 +69,16 @@ define([
          * @memberOf NavigatorURLScheme#
          */
         setCallbackPrompt: function (prompt) {
-            this.callback.prompt = prompt;
+            this._callback.prompt = prompt;
+        },
+
+        /**
+         * Sets the URL for the destination app's link back.
+         * @param {string} url The URL to use; library defaults to location.href
+         * @memberOf NavigatorURLScheme#
+         */
+        setCallbackURL: function (url) {
+            this._callback.url = url;
         },
 
         /**
@@ -82,7 +89,7 @@ define([
          * @memberOf NavigatorURLScheme#
          */
         setStart: function (start) {
-            this.start = start;
+            this._start = start;
         },
 
         /**
@@ -92,7 +99,7 @@ define([
          * @memberOf NavigatorURLScheme#
          */
         addStop: function (stop) {
-            this.stops.push(stop);
+            this._stops.push(stop);
         },
 
         /**
@@ -100,7 +107,7 @@ define([
          * @memberOf NavigatorURLScheme#
          */
         clearStops: function () {
-            this.stops = [];
+            this._stops = [];
         },
 
         /**
@@ -119,13 +126,13 @@ define([
         setOptions: function (options) {
             if (esriLang.isDefined(options)) {
                 if (options.hasOwnProperty("travelmode")) {
-                    this.travelmode = options.travelmode;
+                    this._travelmode = options.travelmode;
                 }
                 if (options.hasOwnProperty("optimize")) {
-                    this.optimize = options.optimize;
+                    this._optimize = options.optimize;
                 }
                 if (options.hasOwnProperty("navigate")) {
-                    this.navigate = options.navigate;
+                    this._navigate = options.navigate;
                 }
             }
         },
@@ -133,45 +140,50 @@ define([
         /**
          * Generates the URL encapsulating the request.
          * @return {string|null} Generated url or null in case either no stops were defined or the payload
-         * could not be converted to JSON; for null case, reason can be retrieved by calling getLastStatus()
+         * could not be constructed; for null case, reason can be retrieved by calling getLastStatus()
          * @memberOf NavigatorURLScheme#
          */
         getURL: function () {
-            var url = null;
-            this.lastStatus = "";
+            var url = null, urlParams = "";
+            this._lastStatus = "";
 
-            if (this.stops.length > 0) {
+            if (this._stops.length > 0) {
                 // Add required parameters
-                var payload = {
-                    version: this.version,
-                    stops: this.stops,
-                    callback: this.callback
-                };
+                array.forEach(this._stops, lang.hitch(this, function (stop) {
+                    urlParams += this._addStopParam("stop", stop);
+                }));
 
                 // Add optional parameters
-                if (esriLang.isDefined(this.travelmode)) {
-                    payload.travelmode = this.travelmode;
-                }
-                if (esriLang.isDefined(this.optimize)) {
-                    payload.optimize = this.optimize;
-                }
-                if (esriLang.isDefined(this.navigate)) {
-                    payload.navigate = this.navigate;
-                }
-                if (esriLang.isDefined(this.start)) {
-                    payload.start = this.start;
+                if (esriLang.isDefined(this._start)) {
+                    urlParams += this._addStopParam("start", this._start);
                 }
 
-                // Create the applink URL
+                if (esriLang.isDefined(this._travelmode)) {
+                    urlParams += "&travelmode=" + encodeURIComponent(this._travelmode);
+                }
+                if (esriLang.isDefined(this._optimize)) {
+                    urlParams += "&optimize=" + this._optimize.toString();
+                }
+                if (esriLang.isDefined(this._navigate)) {
+                    urlParams += "&navigate=" + this._navigate.toString();
+                }
+
+                if (esriLang.isDefined(this._callback.url)) {
+                    urlParams += "&callback=" + encodeURIComponent(this._callback.url);
+                }
+                if (esriLang.isDefined(this._callback.prompt)) {
+                    urlParams += "&callbackprompt=" + encodeURIComponent(this._callback.prompt);
+                }
+
+                // Create the applink URL after clearing first parameter separator
                 try {
-                    url = this.product + this.paramPrefix +
-                        encodeURIComponent(JSON.stringify(payload));
-                    this.lastStatus = "OK";
+                    url = this._product + this._paramPrefix + urlParams.replace("&", "?");
+                    this._lastStatus = "OK";
                 } catch (ignore) {
-                    this.lastStatus = "Unable to build payload";
+                    this._lastStatus = "Unable to build payload";
                 }
             } else {
-                this.lastStatus = "No stops defined";
+                this._lastStatus = "No stops defined";
             }
 
             return url;
@@ -183,7 +195,24 @@ define([
          * @memberOf NavigatorURLScheme#
          */
         getLastStatus: function () {
-            return this.lastStatus;
+            return this._lastStatus;
+        },
+
+        //--------------------------------------------------------------------------------------------------------------------//
+
+        _addStopParam: function (stopTag, stop) {
+            var urlParam;
+
+            if (esriLang.isDefined(stop.address)) {
+                urlParam = "&" + stopTag + "=" + encodeURIComponent(stop.address);
+            } else {
+                urlParam = "&" + stopTag + "=" + stop.latitude + "," + stop.longitude;
+            }
+            if (esriLang.isDefined(stop.name) && stop.name.length > 0) {
+                urlParam += "&" + stopTag + "name=" + encodeURIComponent(stop.name);
+            }
+
+            return urlParam;
         }
 
     });

@@ -83,9 +83,9 @@ define([
 
         /**
          * Sets the starting location for the navigation.
-         * @param {object|null} start Starting location in the stop format: {name, latitude, longitude} or
-         *                 {name, address} (or null to use the default start: the current position);
-         *                 latitude & longitude are in decimal degrees; address is a string
+         * @param {object|null} start Starting location in the stop format: {[name,] latitude, longitude} or
+         *                 {[name,] address} (or null to use the default start--the current position);
+         *                 latitude & longitude are in decimal degrees; address is a string; name is optional
          * @memberOf NavigatorURLScheme#
          */
         setStart: function (start) {
@@ -94,8 +94,9 @@ define([
 
         /**
          * Adds a stop for the navigation; stops are visited in the order added.
-         * @param {object} stop Location in the stop format: {name, latitude, longitude} or {name, address};
-         *                 latitude & longitude are in decimal degrees; address is a string
+         * @param {object} stop Location in the stop format: {[name,] latitude, longitude} or
+         *                 {[name,] address} (or null to use the default start--the current position);
+         *                 latitude & longitude are in decimal degrees; address is a string; name is optional
          * @memberOf NavigatorURLScheme#
          */
         addStop: function (stop) {

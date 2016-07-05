@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Launcher for Esri Redlands campus to Redlands public library</title>
+    <link rel="stylesheet" href="//js.arcgis.com/3.16/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="//js.arcgis.com/3.16/esri/css/esri.css">
+</head>
+<body>
+<i>Launcher for Esri Redlands campus to Redlands public library using lat &amp; long</i>
+
+<h3>Build Navigator request</h3>
+
+<br/><i>Options</i>
+<br/>Optimize:
+<input id="optimizeTrue" type="radio" name="optimize" value="true">true</input>
+<input id="optimizeFalse" type="radio" name="optimize" value="false">false</input>
+<input id="optimizeNull" type="radio" name="optimize" value="use app setting" checked>use app setting</input>
+
+<br/>Start navigating upon launch:
+<input id="navigateTrue" type="radio" name="navigate" value="true">true</input>
+<input id="navigateFalse" type="radio" name="navigate" value="false" checked>false</input>
+
+<br/>Travel mode:
+<input id="travelmode_driving_time" type="radio" name="travelmode" value="driving time" checked>driving time</input>
+<input id="travelmode_driving_distance" type="radio" name="travelmode" value="driving distance">driving distance</input>
+<input id="travelmode_trucking_time" type="radio" name="travelmode" value="trucking time">trucking time</input>
+<input id="travelmode_trucking_distance" type="radio" name="travelmode" value="trucking distance">trucking distance</input>
+<input id="travelmode_walking_time" type="radio" name="travelmode" value="walking time">walking time</input>
+<input id="travelmode_walking_distance" type="radio" name="travelmode" value="walking distance">walking distance</input>
+<input id="travelmode_rural_driving_time" type="radio" name="travelmode" value="rural driving time">rural driving time</input>
+<input id="travelmode_rural_driving_distance" type="radio" name="travelmode" value="rural driving distance">rural driving distance</input>
+
+<hr/>
+<h3>Summary of request</h3>
+<div>Start: <span id="start"></span></div>
+<div>Stop(s): <div id="stops" style="padding-left:16px"></div></div>
+<div id="optimize">Optimize: use app setting</div>
+<div id="navigate">Navigate on launch: false</div>
+<div id="travelmode">Travel mode: driving time</div>
+<br/>
+<hr/>
+<h3>Launch Navigator</h3>
+<button id="goto">Go to Navigator</button>
+
+<script type="text/javascript">
+    var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+    var dojoConfig = {
+        async: true,
+        packages: [{
+            name: "lib",
+            location: package_path + '/..'
+        }]
+    };
+
+    // Have to handle a locale parameter before dojo is loaded
+    var urlLocale = location.search.match(/locale=([\w\-]+)/) ? RegExp.$1 : null;
+    if(urlLocale){
+        dojoConfig.locale = urlLocale;
+    }
+</script>
+<script src="https://js.arcgis.com/3.16/"></script>
+<script>
+    require(["dojo/dom", "dojo/dom-attr", "dojo/on", "dojo/parser", "dijit/registry", "dojo/domReady!"],
+        function (dom, domAttr, on, parser, registry) {
+
+        parser.parse();
+
+        require(["lib/NavigatorURLScheme"], function (Applink) {
+            var applink = new Applink({
+                callbackPrompt: "Return to launching web page"
+            });
+
+            var start = {
+                name: "Esri Redlands campus",
+                latitude: 34.057743,
+                longitude: -117.195983
+            };
+            var stop1 = {
+                name: "Redlands public library",
+                latitude: 34.054173,
+                longitude: -117.184102
+            };
+
+            // Sets
+            applink.setStart(start);
+            dom.byId("start").innerHTML = JSON.stringify(start);
+
+            applink.addStop(stop1);
+            dom.byId("stops").innerHTML += JSON.stringify(stop1);
+
+            on(dom.byId("optimizeTrue"), "click", setOptimize);
+            on(dom.byId("optimizeFalse"), "click", setOptimize);
+            on(dom.byId("optimizeNull"), "click", setOptimize);
+            function setOptimize(evt) {
+                applink.setOptions({"optimize": destring(evt.target.value)});
+                dom.byId("optimize").innerHTML = "Optimize: " + evt.target.value;
+            }
+
+            on(dom.byId("navigateTrue"), "click", setNavigate);
+            on(dom.byId("navigateFalse"), "click", setNavigate);
+            function setNavigate(evt) {
+                applink.setOptions({"navigate": destring(evt.target.value)});
+                dom.byId("navigate").innerHTML = "Navigate on launch: " + evt.target.value;
+            }
+
+            on(dom.byId("travelmode_driving_time"), "click", setTravelmode);
+            on(dom.byId("travelmode_driving_distance"), "click", setTravelmode);
+            on(dom.byId("travelmode_trucking_time"), "click", setTravelmode);
+            on(dom.byId("travelmode_trucking_distance"), "click", setTravelmode);
+            on(dom.byId("travelmode_walking_time"), "click", setTravelmode);
+            on(dom.byId("travelmode_walking_distance"), "click", setTravelmode);
+            on(dom.byId("travelmode_rural_driving_time"), "click", setTravelmode);
+            on(dom.byId("travelmode_rural_driving_distance"), "click", setTravelmode);
+            function setTravelmode(evt) {
+                applink.setOptions({"travelmode": evt.target.value});
+                dom.byId("travelmode").innerHTML = "Travel mode: " + evt.target.value;
+            }
+
+            function destring(value) {
+                if (value === "use app setting") {
+                    return null;
+                }
+                return value === "true";
+            }
+
+            // Go!
+            on(dom.byId("goto"), "click", function (evt) {
+                var url = applink.getURL();
+                if (url) {
+                    console.log(url);
+
+                    // If this test program has query params, assume that we're launching the web page app stand-in
+                    if (document.location.search) {
+                        url = url.replace("://?", "/?")
+                    }
+                    document.location = url;
+                } else {
+                    console.log(applink.getLastStatus());
+                }
+            });
+        });
+    });
+
+</script>
+</body>
+</html>

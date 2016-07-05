@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Navigator</title>
+</head>
+<body>
+
+    <div>Raw URL query:<br/><span id="urlQuery"></span></div><br/>
+    <div>Decoded URL query:<br/><span id="decodedPayload"></span></div><br/>
+    <button id="return" style="display:none">(Return)</button>
+
+
+<script type="text/javascript">
+    var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+    var dojoConfig = {
+        async: true,
+        packages: [{
+            name: "lib",
+            location: package_path + '/lib'
+        }]
+    };
+
+    // Have to handle a locale parameter before dojo is loaded
+    var urlLocale = location.search.match(/locale=([\w\-]+)/) ? RegExp.$1 : null;
+    if(urlLocale){
+        dojoConfig.locale = urlLocale;
+    }
+</script>
+<script src="https://js.arcgis.com/3.16/"></script>
+<script>
+    require(["dojo/_base/array", "dojo/dom", "dojo/dom-style", "dojo/on", "esri/lang", "dojo/domReady!"], function (array, dom, domStyle, on, esriLang) {
+
+        var urlParams = location.search;
+        dom.byId("urlQuery").innerHTML = urlParams;
+
+        var decodedPayload = dom.byId("decodedPayload");
+        decodedPayload.innerHTML = "<ul>";
+        //decodedPayload.innerHTML = decodeURIComponent(urlParams);
+
+        // If URL parameters contain a callback URL and prompt, show it.
+        if (esriLang.isDefined(urlParams) && urlParams.length > 0) {
+            urlParams = urlParams.substring(1).split("&");
+            array.forEach(urlParams, function (param) {
+                decodedPayload.innerHTML += "<li>" + decodeURIComponent(param) + "</li>";
+                paramPair = param.split("=");
+                if (paramPair[0] === "callback") {
+                    var returnBtn = dom.byId("return");
+                    var returnURL = decodeURIComponent(paramPair[1]);
+                    on(returnBtn, "click", function (evt) {
+                        document.location = returnURL;
+                    });
+                    domStyle.set(returnBtn, "display", "block");
+                } else if (paramPair[0] === "callbackprompt") {
+                    var returnBtn = dom.byId("return");
+                    var returnPrompt = decodeURIComponent(paramPair[1]);
+                    returnBtn.innerText = returnPrompt;
+                }
+            });
+            decodedPayload.innerHTML += "</ul>";
+        }
+
+    });
+
+</script>
+</body>
+</html>
+

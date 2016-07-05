@@ -30,10 +30,10 @@ define([
         version: "1.0",
         // simulation
         //product: "arcgis-navigator.html",
-        //paramPrefix: "?payload=",
+        //paramPrefix: "?",
         // real
         product: "arcgis-navigator",
-        paramPrefix: "://?payload=",
+        paramPrefix: "://?",
 
         stops: [],          // collection of (name + lat,lon in WGS84 decimal degrees) and/or (name + geocodeable address)
         callback: {
@@ -55,7 +55,7 @@ define([
          * Encapsulates the construction of an applink.
          * @constructor
          * @class
-         * @name applink_arcgis-navigator_1_0
+         * @name NavigatorURLScheme
          * @classdesc
          * @param {object} [config] Library configuration; its only parameter is the optional callbackPrompt string
          */
@@ -68,7 +68,7 @@ define([
         /**
          * Sets the prompt for the destination app's link back.
          * @param {string} prompt The string to use in the link
-         * @memberOf applink_arcgis-navigator_1_0#
+         * @memberOf NavigatorURLScheme#
          */
         setCallbackPrompt: function (prompt) {
             this.callback.prompt = prompt;
@@ -79,7 +79,7 @@ define([
          * @param {object|null} start Starting location in the stop format: {name, latitude, longitude} or
          *                 {name, address} (or null to use the default start: the current position);
          *                 latitude & longitude are in decimal degrees; address is a string
-         * @memberOf applink_arcgis-navigator_1_0#
+         * @memberOf NavigatorURLScheme#
          */
         setStart: function (start) {
             this.start = start;
@@ -89,7 +89,7 @@ define([
          * Adds a stop for the navigation; stops are visited in the order added.
          * @param {object} stop Location in the stop format: {name, latitude, longitude} or {name, address};
          *                 latitude & longitude are in decimal degrees; address is a string
-         * @memberOf applink_arcgis-navigator_1_0#
+         * @memberOf NavigatorURLScheme#
          */
         addStop: function (stop) {
             this.stops.push(stop);
@@ -97,7 +97,7 @@ define([
 
         /**
          * Removes all navigation stops, including the final destination.
-         * @memberOf applink_arcgis-navigator_1_0#
+         * @memberOf NavigatorURLScheme#
          */
         clearStops: function () {
             this.stops = [];
@@ -111,7 +111,10 @@ define([
          *                 defaults to app setting; navigate is a boolean indicating if navigation should commence
          *                 when Navigator opens up, where null is the same as false; initial values for all three
          *                 are null; options omitted from this argument are not changed
-         * @memberOf applink_arcgis-navigator_1_0#
+         *                 Available travel modes are "Driving Time", "Driving Distance", "Trucking Time",
+         *                 "Trucking Distance", "Walking Time", "Walking Distance", "Rural Driving Time",
+         *                 "Rural Driving Distance"
+         * @memberOf NavigatorURLScheme#
          */
         setOptions: function (options) {
             if (esriLang.isDefined(options)) {
@@ -131,7 +134,7 @@ define([
          * Generates the URL encapsulating the request.
          * @return {string|null} Generated url or null in case either no stops were defined or the payload
          * could not be converted to JSON; for null case, reason can be retrieved by calling getLastStatus()
-         * @memberOf applink_arcgis-navigator_1_0#
+         * @memberOf NavigatorURLScheme#
          */
         getURL: function () {
             var url = null;
@@ -177,7 +180,7 @@ define([
         /**
          * Returns the status message from the last call to getURL.
          * @return {string} Status string
-         * @memberOf applink_arcgis-navigator_1_0#
+         * @memberOf NavigatorURLScheme#
          */
         getLastStatus: function () {
             return this.lastStatus;

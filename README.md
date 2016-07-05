@@ -10,7 +10,7 @@ This is a multi-language repository that contains documentation and sample code 
 ## What's included
 
 * [Documentation](#documentation) on the URL scheme structure
-* [Sample code](#sample) for iOS (Swift), Android (Java), and Web (JavaScript)
+* [Sample code](#sample) for iOS (Swift), Android (Java), Python, and Web (JavaScript)
 
 ## Getting started
 
@@ -156,6 +156,7 @@ If an error is encountered when processing a URL scheme, the user will receive a
 * [Swift (iOS)](https://github.com/Esri/navigator-integration/tree/master/src/Swift)
 * [Java (Android)](https://github.com/Esri/navigator-integration/tree/master/src/Android)
 * [Python](https://github.com/Esri/navigator-integration/tree/master/src/Python)
+* [JavaScript](https://github.com/Esri/navigator-integration/tree/master/src/JavaScript)
 
 ## Resources and related repositories
 

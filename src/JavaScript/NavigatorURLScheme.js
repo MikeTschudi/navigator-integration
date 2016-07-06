@@ -42,7 +42,7 @@ define([
         _start: null,        // start in "stop" format; defaults to current position
         _navigate: null,     // defaults to false
         _optimize: null,     // defaults to app setting
-        _travelMode: null,   // defaults to default travel mode if available
+        _travelMode: null,   // defaults to map's default travel mode
 
         _lastStatus: "",
 
@@ -114,7 +114,7 @@ define([
         /**
          * Sets one or more of the options.
          * @param {object} options Structure containing one or more of the attributes travelmode, optimize, navigate;
-         *                 travelmode is a string with a mode keyword or null to use default travel mode if available;
+         *                 travelmode is a string with a mode keyword or null to use map's default travel mode;
          *                 optimize is a nullable boolean indicating if the route is to be optimized, where null
          *                 defaults to app setting; navigate is a boolean indicating if navigation should commence
          *                 when Navigator opens up, where null is the same as false; initial values for all three

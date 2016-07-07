@@ -118,10 +118,11 @@ define([
          *                 optimize is a nullable boolean indicating if the route is to be optimized, where null
          *                 defaults to app setting; navigate is a boolean indicating if navigation should commence
          *                 when Navigator opens up, where null is the same as false; initial values for all three
-         *                 are null; options omitted from this argument are not changed
-         *                 Available travel modes are "Driving Time", "Driving Distance", "Trucking Time",
-         *                 "Trucking Distance", "Walking Time", "Walking Distance", "Rural Driving Time",
-         *                 "Rural Driving Distance"
+         *                 are null; options omitted from this argument are not changed.
+         *                 Note that the map defines which travel modes are available, and mode names are
+         *                 case-sensitive. The default Esri maps have the following travel modes: "Driving Time",
+         *                 "Driving Distance", "Trucking Time", "Trucking Distance", "Walking Time", "Walking Distance",
+         *                 "Rural Driving Time", "Rural Driving Distance"
          * @memberOf NavigatorURLScheme#
          */
         setOptions: function (options) {

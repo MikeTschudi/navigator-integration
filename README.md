@@ -117,7 +117,7 @@ The following example URL displays directions to Esri that are generated based o
 arcgis-navigator://?stop=380+New+York+St,+Redlands,+CA&stopname=Esri&travelmode=Trucking+Time
 ```
 
-Note that the map defines which travel modes are available. The default Esri maps have the following travel modes: 
+Note that the map defines which travel modes are available, and mode names are case-sensitive. The default Esri maps have the following travel modes: 
 
 - Driving Time
 - Driving Distance

@@ -3,31 +3,435 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>Navigator Launchers</title>
+    <title>Launcher</title>
+    <link rel="stylesheet" href="//js.arcgis.com/3.16/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="//js.arcgis.com/3.16/esri/css/esri.css">
 </head>
-<body>
+<body class="claro">
 
-<h3>Test pages for various Navigator invocations</h3>
+<h3>Build Navigator request</h3>
 
-<ul>
-    <li><a href="launch_0.html">General-purpose</a></li>
-    <li>Stops defined using latitude &amp; longitude
+<div id="setStops" style="visibility:hidden;width:100%;height:310px" data-dojo-type="dijit/layout/TabContainer" data-dojo-props="tabPosition:'top'">
+    <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title:'Manual'">
+        <label for="address">Address:</label>
+        <br/><input type="text" name="address"  id="address"
+            data-dojo-type="dijit/form/TextBox"
+            data-dojo-props="trim:true"
+            style="width: 20em;" />
+        <br/><i>or</i>
+        <br/><label for="latitude">Latitude (dec deg):</label>
+        <br/><input id="latitude" type="text" name= "latitude"
+            data-dojo-type="dijit/form/NumberTextBox"
+            data-dojo-props="invalidMessage:'Please enter a numeric value.',
+            rangeMessage:'Invalid latitude.',constraints:{min:-90,max:90,pattern:'0.######'}" />
+        <br/><label for="longitude">Longitude (dec deg):</label>
+        <br/><input id="longitude" type="text" name= "longitude"
+            data-dojo-type="dijit/form/NumberTextBox"
+            data-dojo-props="invalidMessage:'Please enter a numeric value.',
+            rangeMessage:'Invalid longitude.',constraints:{min:-180,max:180,pattern:'0.######'}" />
+        <br/>
+        <br/><label for="name">Optional stop name:</label>
+        <br/><input id="name" type="text" name="name"
+            data-dojo-type="dijit/form/TextBox"
+            data-dojo-props="trim:true" /><br/>
+        <br/>
+        <button id="addStart">Add as start</button> <button id="addStop">Add as stop</button>
+        <br/>
+        <div id="error"></div>
+    </div>
+
+    <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title:'Presets'">
         <ul>
-            <li><a href="launch_x1_ll.html">Current location to Redlands public library</a></li>
-            <li><a href="launch_s1_ll.html">Esri Redlands campus to Redlands public library</a></li>
-            <li><a href="launch_x2_ll.html">Current location to Redlands public library to donuts</a></li>
-            <li><a href="launch_s2_ll.html">Esri Redlands campus to Redlands public library to donuts</a></li>
+            <li style="margin-bottom:10px">Pedestrian vs. car: <button id="walking_v_car_ll_shortcut">by lat/long</button> <button id="walking_v_car_addr_shortcut">by address</button></li>
+            <li style="margin-bottom:10px">Truck routing vs. car routing, rural area: <button id="truck_v_car_ll_shortcut">by lat/long</button> <button id="truck_v_car_addr_shortcut">by address</button></li>
+            <li style="margin-bottom:10px">Shorter vs. longer, traffic area: <button id="traffic_ll_shortcut">by lat/long</button> <button id="traffic_addr_shortcut">by address</button></li>
+            <li style="margin-bottom:10px">Short & hard vs. long & easy walks: <button id="walking_ll_shortcut">by lat/long</button> <button id="walking_addr_shortcut">by address</button></li>
+            <li style="margin-bottom:10px">Esri Redlands to Redlands public library to donuts to University of Redlands: <button id="esri_3stops_ll_shortcut">by lat/long</button> <button id="esri_3stops_addr_shortcut">by address</button></li>
+            <li style="margin-bottom:10px">Current location to Redlands public library: <button id="current_ll_shortcut">by lat/long</button> <button id="current_addr_shortcut">by address</button></li>
+            <li style="margin-bottom:10px">Current location to Redlands public library to donuts to University of Redlands: <button id="current_3stops_ll_shortcut">by lat/long</button> <button id="current_3stops_addr_shortcut">by address</button></li>
         </ul>
-    </li>
-    <li>Stops defined using addresses
-        <ul>
-            <li><a href="launch_x1_ad.html">Current location to Redlands public library</a></li>
-            <li><a href="launch_s1_ad.html">Esri Redlands campus to Redlands public library</a></li>
-            <li><a href="launch_x2_ad.html">Current location to Redlands public library to donuts</a></li>
-            <li><a href="launch_s2_ad.html">Esri Redlands campus to Redlands public library to donuts</a></li>
-        </ul>
-    </li>
-</ul>
+    </div>
 
+</div>
+
+<br/><b><i>Set options</i></b>
+<br/>Optimize:
+<input id="optimizeNull" type="radio" name="optimize" value="use app setting" checked>use app setting</input>
+<input id="optimizeTrue" type="radio" name="optimize" value="true">true</input>
+<input id="optimizeFalse" type="radio" name="optimize" value="false">false</input>
+
+<br/>Start navigating upon launch:
+<input id="navigateTrue" type="radio" name="navigate" value="true">true</input>
+<input id="navigateFalse" type="radio" name="navigate" value="false" checked>false</input>
+
+<br/>Travel mode:
+<input id="travelmodeNull" type="radio" name="travelmode" value="use map's default" checked>use map's default</input>
+<input id="travelmode_driving_time" type="radio" name="travelmode" value="Driving Time">Driving Time</input>
+<input id="travelmode_driving_distance" type="radio" name="travelmode" value="Driving Distance">Driving Distance</input>
+<input id="travelmode_trucking_time" type="radio" name="travelmode" value="Trucking Time">Trucking Time</input>
+<input id="travelmode_trucking_distance" type="radio" name="travelmode" value="Trucking Distance">Trucking Distance</input>
+<input id="travelmode_walking_time" type="radio" name="travelmode" value="Walking Time">Walking Time</input>
+<input id="travelmode_walking_distance" type="radio" name="travelmode" value="Walking Distance">Walking Distance</input>
+<input id="travelmode_rural_driving_time" type="radio" name="travelmode" value="Rural Driving Time">Rural Driving Time</input>
+<input id="travelmode_rural_driving_distance" type="radio" name="travelmode" value="Rural Driving Distance">Rural Driving Distance</input>
+
+<br/>Callback:
+<input id="includeCallback" type="checkbox" checked>Include callback URL</input>
+<input id="includeCallbackPrompt" type="checkbox" checked>Include name of callback app <span id="callbackPromptAppName"></span></input>
+
+<hr/>
+<h3>Summary of request</h3>
+<button id="clearStart" disabled="disabled">Clear start</button> <button id="clearStops" disabled="disabled">Clear stops</button>
+<br/><br/>
+<div>Start: <span id="start"></span></div>
+<div>Stop(s): <div id="stops" style="padding-left:16px"></div></div>
+<div id="optimize">Optimize multiple stops: use app setting</div>
+<div id="navigate">Navigate on launch: false</div>
+<div id="travelmode">Travel mode: use map's default</div>
+<div id="callback">Callback: Yes, with callback app name</div>
+<br/>
+<hr/>
+<h3>Launch Navigator</h3>
+<button id="goto" disabled="disabled">Go to Navigator</button>
+
+<script type="text/javascript">
+    var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+    var dojoConfig = {
+        async: true,
+        parseOnLoad: true,
+        packages: [{
+            name: "lib",
+            location: package_path + '/..'
+        }]
+    };
+
+    // Have to handle a locale parameter before dojo is loaded
+    var urlLocale = location.search.match(/locale=([\w\-]+)/) ? RegExp.$1 : null;
+    if(urlLocale){
+        dojoConfig.locale = urlLocale;
+    }
+</script>
+<script src="https://js.arcgis.com/3.16/"></script>
+<script>
+    require(["dojo/_base/array", "dojo/dom", "dojo/dom-attr", "dojo/dom-style", "dojo/on", "dojo/parser", "dijit/registry", "dojo/domReady!"],
+        function (array, dom, domAttr, domStyle, on, parser, registry) {
+
+        var appName = "Web Page Launcher";
+
+        // Give the TabContainer time to get formatted
+        setTimeout(function () {
+            domStyle.set("setStops", "visibility", "visible");
+        }, 800);
+
+        require(["lib/NavigatorURLScheme"], function (Applink) {
+            var applink = new Applink({
+                callbackPrompt: appName
+            });
+            dom.byId("callbackPromptAppName").innerHTML = "('" + appName + "')";
+            dom.byId("callback").innerHTML = "Callback: yes, using callback app name '" + appName + "'";
+
+            // Sets
+            function getStop() {
+                var stop,
+                    nameField = registry.byId("name"), addressField = registry.byId("address"),
+                    latitudeField = registry.byId("latitude"), longitudeField = registry.byId("longitude"),
+                    nameValue = nameField.get("value"), addressValue = addressField.get("value"),
+                    latitudeValue = latitudeField.get("value"), longitudeValue = longitudeField.get("value");
+
+                if (addressValue && addressValue.length > 0) {
+                    stop = {
+                        address: addressValue
+                    };
+                } else if (!isNaN(latitudeValue) && !isNaN(longitudeValue)) {
+                    stop = {
+                        latitude: latitudeValue,
+                        longitude: longitudeValue
+                    };
+                }
+
+                if (stop && nameValue && nameValue.length > 0) {
+                    stop.name = nameValue;
+                }
+
+                return stop;
+            }
+
+            function addStart(start) {
+                if (start) {
+                    applink.setStart(start);
+                    dom.byId("start").innerHTML = JSON.stringify(start);
+                    domAttr.remove("clearStart", "disabled");
+                    dom.byId("error").innerHTML = "";
+                } else {
+                    dom.byId("error").innerHTML = "A start location has a name and either an address or a latitude/longitude pair";
+                }
+            }
+
+            function addStop(stop) {
+                if (stop) {
+                    applink.addStop(stop);
+                    if (dom.byId("stops").innerHTML.length > 0) {
+                        dom.byId("stops").innerHTML += "<br/>";
+                    }
+                    dom.byId("stops").innerHTML += JSON.stringify(stop);
+                    domAttr.remove("goto", "disabled");
+                    domAttr.remove("clearStops", "disabled");
+                    dom.byId("error").innerHTML = "";
+                } else {
+                    dom.byId("error").innerHTML = "A stop location has either an address or a latitude/longitude pair";
+                }
+            }
+
+            function setPreset(start, stops) {
+                applink.clearStops();
+                dom.byId("stops").innerHTML = "";
+
+                if (start) {
+                    addStart(start);
+                }
+                array.forEach(stops, function (stop) {
+                    addStop(stop);
+                });
+
+                domAttr.remove("goto", "disabled");
+                domAttr.remove("clearStops", "disabled");
+                dom.byId("error").innerHTML = "";
+            }
+
+            on(dom.byId("addStart"), "click", function (evt) {
+                var start = getStop();
+                addStart(stop);
+            });
+
+            on(dom.byId("addStop"), "click", function (evt) {
+                var stop = getStop();
+                addStop(stop);
+            });
+
+            on(dom.byId("walking_v_car_ll_shortcut"), "click", function () {
+                setPreset({
+                    latitude: 33.9758913, longitude: -117.3396398
+                }, [{
+                    latitude: 33.9736624, longitude: -117.3190017
+                }]);
+            });
+            on(dom.byId("walking_v_car_addr_shortcut"), "click", function () {
+                setPreset({
+                    address: "1201 University Avenue #101, Riverside, CA"
+                }, [{
+                    name: "opposite side of campus",
+                    address: "246 W Broadbent Dr, Riverside, CA"
+                }]);
+            });
+
+            on(dom.byId("truck_v_car_ll_shortcut"), "click", function () {
+                setPreset({
+                    name: "Joshua Tree Visitor Center",
+                    latitude: 34.1339304, longitude: -116.3177887
+                }, [{
+                    name: "Chiriaco Summit Airport",
+                    latitude: 33.6652834, longitude: -115.7127447
+                }]);
+            });
+            on(dom.byId("truck_v_car_addr_shortcut"), "click", function () {
+                setPreset({
+                    name: "Joshua Tree Visitor Center",
+                    address: "6554 Park Boulevard, Joshua Tree, CA"
+                }, [{
+                    name: "Chiriaco Summit Airport",
+                    address: "62450 Chiriaco Road, Indio, CA"
+                }]);
+            });
+
+            on(dom.byId("traffic_ll_shortcut"), "click", function () {
+                setPreset({
+                    name: "Black & Decker Distribution Center",
+                    latitude: 34.1270418, longitude: -117.4272501
+                }, [{
+                    name: "REI",
+                    latitude: 34.1076288, longitude: -117.541063
+                }]);
+            });
+            on(dom.byId("traffic_addr_shortcut"), "click", function () {
+                setPreset({
+                    name: "Black & Decker Distribution Center",
+                    address: "1590 Tamarind Avenue, Rialto, CA"
+                }, [{
+                    name: "REI",
+                    address: "12218 East Foothill Boulevard, Rancho Cucamonga, CA"
+                }]);
+            });
+
+            on(dom.byId("walking_ll_shortcut"), "click", function () {
+                setPreset({
+                    name: "Sheraton Fisherman's Wharf Hotel",
+                    latitude: 37.8067632, longitude: -122.4158467
+                }, [{
+                    name: "San Francisco Visitor Information Center",
+                    latitude: 37.7841152, longitude: -122.4104997
+                }]);
+            });
+            on(dom.byId("walking_addr_shortcut"), "click", function () {
+                setPreset({
+                    name: "Sheraton Fisherman's Wharf Hotel",
+                    address: "2500 Mason Street, San Francisco, CA"
+                }, [{
+                    name: "San Francisco Visitor Information Center",
+                    address: "900 Market Street, San Francisco, CA"
+                }]);
+            });
+
+            on(dom.byId("esri_3stops_ll_shortcut"), "click", function () {
+                setPreset({
+                    name: "Esri",
+                    latitude: 34.057743, longitude: -117.195983
+                }, [{
+                    name: "Redlands public library",
+                    latitude: 34.054173, longitude: -117.184102
+                }, {
+                    name: "donuts",
+                    latitude: 34.0622142, longitude: -117.2083
+                }, {
+                    name: "Univ of Redlands",
+                    latitude: 34.0626894, longitude: -117.1653697
+                }]);
+            });
+            on(dom.byId("esri_3stops_addr_shortcut"), "click", function () {
+                setPreset({
+                    name: "Esri",
+                    address: "380 New York St, Redlands, CA"
+                }, [{
+                    name: "Redlands public library",
+                    address: "125 W Vine St, Redlands, CA"
+                }, {
+                    name: "donuts",
+                    address: "1591 W Redlands Blvd, Redlands, CA"
+                }, {
+                    name: "Univ of Redlands",
+                    address: "1200 E Colton Ave, Redlands, CA"
+                }]);
+            });
+
+            on(dom.byId("current_ll_shortcut"), "click", function () {
+                setPreset(null, [{
+                    name: "Redlands public library",
+                    latitude: 34.054173, longitude: -117.184102
+                }])
+            });
+            on(dom.byId("current_addr_shortcut"), "click", function () {
+                setPreset(null, [{
+                    name: "Redlands public library",
+                    address: "125 W Vine St, Redlands, CA"
+                }]);
+            });
+
+            on(dom.byId("current_3stops_ll_shortcut"), "click", function () {
+                setPreset(null, [{
+                    name: "Redlands public library",
+                    latitude: 34.054173, longitude: -117.184102
+                }, {
+                    name: "donuts",
+                    latitude: 34.0622142, longitude: -117.2083
+                }, {
+                    name: "Univ of Redlands",
+                    latitude: 34.0626894, longitude: -117.1653697
+                }]);
+            });
+            on(dom.byId("current_3stops_addr_shortcut"), "click", function () {
+                setPreset(null, [{
+                    name: "Redlands public library",
+                    address: "125 W Vine St, Redlands, CA"
+                }, {
+                    name: "donuts",
+                    address: "1591 W Redlands Blvd, Redlands, CA"
+                }, {
+                    name: "Univ of Redlands",
+                    address: "1200 E Colton Ave, Redlands, CA"
+                }]);
+            });
+
+
+            on(dom.byId("optimizeNull"), "click", setOptimize);
+            on(dom.byId("optimizeTrue"), "click", setOptimize);
+            on(dom.byId("optimizeFalse"), "click", setOptimize);
+            function setOptimize(evt) {
+                applink.setOptions({"optimize": destring(evt.target.value)});
+                dom.byId("optimize").innerHTML = "Optimize multiple stops: " + evt.target.value;
+            }
+
+            on(dom.byId("navigateTrue"), "click", setNavigate);
+            on(dom.byId("navigateFalse"), "click", setNavigate);
+            function setNavigate(evt) {
+                applink.setOptions({"navigate": destring(evt.target.value)});
+                dom.byId("navigate").innerHTML = "Navigate on launch: " + evt.target.value;
+            }
+
+            on(dom.byId("travelmodeNull"), "click", setTravelmode);
+            on(dom.byId("travelmode_driving_time"), "click", setTravelmode);
+            on(dom.byId("travelmode_driving_distance"), "click", setTravelmode);
+            on(dom.byId("travelmode_trucking_time"), "click", setTravelmode);
+            on(dom.byId("travelmode_trucking_distance"), "click", setTravelmode);
+            on(dom.byId("travelmode_walking_time"), "click", setTravelmode);
+            on(dom.byId("travelmode_walking_distance"), "click", setTravelmode);
+            on(dom.byId("travelmode_rural_driving_time"), "click", setTravelmode);
+            on(dom.byId("travelmode_rural_driving_distance"), "click", setTravelmode);
+            function setTravelmode(evt) {
+                applink.setOptions({"travelmode": evt.target.value});
+                dom.byId("travelmode").innerHTML = "Travel mode: " + evt.target.value;
+            }
+
+            on(dom.byId("includeCallback"), "click", setCallback);
+            on(dom.byId("includeCallbackPrompt"), "click", setCallback);
+            function setCallback(evt) {
+                var useUrl = dom.byId("includeCallback").checked,
+                    usePrompt = dom.byId("includeCallbackPrompt").checked;
+
+                applink.setCallbackURL(useUrl ? location.href : null);
+                applink.setCallbackPrompt(usePrompt ? appName : null);
+
+                dom.byId("callback").innerHTML = "Callback: "
+                    + (useUrl ? (usePrompt ? "yes, using callback app name '" + appName + "' " : "yes, but without callback app name ") : "no");
+            }
+
+            function destring(value) {
+                if (value === "use app setting" || value === "use map's default") {
+                    return null;
+                }
+                return value === "true";
+            }
+
+            // Clears
+            on(dom.byId("clearStart"), "click", function (evt) {
+                applink.setStart(null);
+                dom.byId("start").innerHTML = "";
+                domAttr.set("clearStart", "disabled", "disabled");
+            });
+
+            on(dom.byId("clearStops"), "click", function (evt) {
+                applink.clearStops();
+                dom.byId("stops").innerHTML = "";
+                domAttr.set("goto", "disabled", "disabled");
+                domAttr.set("clearStops", "disabled", "disabled");
+            });
+
+            // Go!
+            on(dom.byId("goto"), "click", function (evt) {
+                var url = applink.getURL();
+                if (url) {
+                    console.log(url);
+
+                    // If this test program has query params, assume that we're launching the web page app stand-in
+                    if (document.location.search) {
+                        url = url.replace("://?", "/?")
+                    }
+                    document.location = url;
+                } else {
+                    console.log(applink.getLastStatus());
+                }
+            });
+        });
+    });
+
+</script>
 </body>
 </html>

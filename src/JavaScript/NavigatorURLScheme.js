@@ -64,7 +64,8 @@ define([
         },
 
         /**
-         * Sets the prompt for the destination app's link back.
+         * Indicates the app name that should be used when Navigator asks the user if control should be given back to
+         * the calling app.
          * @param {string} prompt The string to use in the link
          * @memberOf NavigatorURLScheme#
          */
